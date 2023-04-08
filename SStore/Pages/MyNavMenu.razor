@@ -1,0 +1,28 @@
+﻿
+<AuthorizeView>
+
+    <Authorized>
+        <MudNavLink Href="/" Icon="@Icons.Material.Filled.Home" Match="NavLinkMatch.All">الرئيسية</MudNavLink>
+        <MudNavLink Href="/catlog/products" Icon="@Icons.Material.Filled.Category" Match="NavLinkMatch.All">المنجات</MudNavLink>
+        <MudNavLink Href="/logout" Icon="@Icons.Material.Filled.Logout" Match="NavLinkMatch.All">تسجيل الخروج</MudNavLink>
+
+
+    </Authorized>
+    <NotAuthorized>
+        <MudNavLink Href="/" Icon="@Icons.Material.Filled.Home" Match="NavLinkMatch.All">الرئيسية</MudNavLink>
+        <MudNavLink Icon="@Icons.Material.Filled.Login" Href="Identity/Account/Login" Match="NavLinkMatch.Prefix">تسجيل الدخول</MudNavLink>
+        <MudNavLink Icon="@Icons.Material.Filled.AppRegistration" Href="Identity/Account/Register" Match="NavLinkMatch.Prefix">تسجيل جديد</MudNavLink>
+        <MudNavLink Href="/about" Icon="@Icons.Material.Filled.RoundaboutLeft" Match="NavLinkMatch.Prefix">عن المتجر</MudNavLink>
+
+    </NotAuthorized>
+</AuthorizeView>
+
+    <MudNavMenu>
+
+
+    </MudNavMenu>
+
+
+@code {
+
+}

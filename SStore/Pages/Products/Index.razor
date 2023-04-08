@@ -1,0 +1,79 @@
+﻿@page "/catlog/products"
+@attribute [Authorize]
+@using SStore.Model.Data.Dtos;
+@inject SStore.Services.IProductService productService
+<MudGrid Justify="Justify.Center">
+    <MudItem xs="10">
+        <MudPaper Elevation="25">
+    <MudToolBar>
+                <MudGrid>
+                    <MudItem>
+                        <MudNavLink Href="/product/edit" Icon="@Icons.Material.Outlined.Add">
+                            اضافة منتج جديد
+                        </MudNavLink>
+                    </MudItem>
+                    <MudItem xs="10">
+                        <MudText Align="Align.Center" Typo="Typo.h5">
+                            ادارة المنتجات
+                        </MudText>
+                    </MudItem>
+                </MudGrid>
+                
+              
+       
+       
+      
+    </MudToolBar>
+</MudPaper>
+    </MudItem>
+    <MudItem xs="12" md="10">
+        <MudDataGrid Items="@products"
+                     T="ProductDto"
+                  
+                     Filterable="false"
+                     Bordered="true"
+                      FilterMode="DataGridFilterMode.ColumnFilterMenu"
+                     SortMode="@SortMode.None"
+                     Groupable="false">
+            <Columns>
+                <PropertyColumn Property="x => x!.ProductName" Filterable="true" />
+                <PropertyColumn Property="x => x!.ProductPrice" Format="C" />
+                <PropertyColumn Property="x => x!.Quantity" />
+                <PropertyColumn  Property="x => x!.Created" />
+                <TemplateColumn Filterable="false">
+                    <CellTemplate>
+                        @{
+                            var editTitle =$" تعديل : {context.Item!.ProductName}";
+                            var editUrl =$"/product/edit/{context.Item.Id}" ;
+                        }
+                        <MudLink Href="@editUrl">
+                            <MudIcon Icon="@Icons.Material.Outlined.Edit"></MudIcon>
+                        </MudLink>
+                       
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </MudDataGrid>
+    </MudItem>
+</MudGrid>
+
+@code {
+
+    List<ProductDto>? products=null;
+    protected override void OnInitialized()
+    {
+    //    productService.CreateProduct(new Model.Data.Entities.Product
+    //        {
+    //            IsActive = true,
+    //            ProductName = "منتج رقم 1",
+    //            ProductPrice = 5.2m,
+    //            Quantity = 43
+    //} );
+        loadItems();
+    }
+
+    private void loadItems()
+    {
+        products = productService.ReadAll()!.ToList()!;
+    }
+}

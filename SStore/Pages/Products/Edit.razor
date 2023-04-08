@@ -1,0 +1,182 @@
+﻿@page "/product/edit/{id:int?}"
+@using SStore.Helpers;
+@using SStore.Model.Data.Dtos;
+@using SStore.Services;
+@inject IProductService productService;
+@attribute [Authorize]
+@inject IAppSnackbarService snackbar
+@inject IImageHelper imageHelper
+@inject IAppStorgeService appStoregeService
+<MudGrid Class="mt-5" Justify="Justify.Center">
+    <MudItem>
+
+    </MudItem>
+    <MudItem sm="12" md="10" lg="10">
+        <MudCard>
+            <MudCardHeader>
+                <MudText Typo="Typo.h6">@title</MudText>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudGrid Justify="Justify.Center">
+                    <MudItem sm="12" md="6" lg="6">
+                            @{
+                            if(errors!=null && errors.Count() > 0)
+                            {
+                                
+                              
+                                @foreach (var error in errors)
+                                {
+
+                                    <MudText Typo="Typo.caption" Color="Color.Error" >*) @error</MudText>
+                                    <MudSpacer  />
+                                }
+                               
+                            }
+                        }
+                            <MudForm @ref="form" Model="productDto" @bind-Errors="errors" @bind-IsValid="success">
+                                <MudTextField  @bind-Value="productDto!.ProductName" Required="true" Variant="Variant.Outlined" For="@(()=>productDto!.ProductName)" Label="اسم المنتج"></MudTextField>
+                                <MudTextField  Format="C" @bind-Value="productDto!.ProductPrice" Required="true" Variant="Variant.Outlined" For="@(()=>productDto!.ProductPrice)" Label="سعر المنتج"></MudTextField>
+                                <MudTextField  @bind-Value="productDto!.Quantity" Required="true" Variant="Variant.Outlined" For="@(()=>productDto!.Quantity)" Label="الكمية"></MudTextField>
+                                <MudCheckBox @bind-Checked="productDto.IsActive" KeyboardEnabled="true" Label="تنشيط ؟" ></MudCheckBox>
+                                <MudItem Class="mt-2 mb-2">
+                                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="submitForm" Disabled="@(!success)">
+                                        <MudText Typo="Typo.button">حفظ</MudText>
+                                        <MudIcon Icon="@(Icons.Material.Outlined.Save)" />
+                                    </MudButton>
+                                </MudItem>
+                               
+                            </MudForm>
+                       
+                    </MudItem>
+                </MudGrid>
+              
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+
+    @if (isEditable)
+    {
+        <MudItem sm="12" md="10" lg="10">
+            <MudGrid>
+                <MudItem>
+                    <MudPaper>
+                        @{
+                            if (productDto!.ProductImagePath != null)
+                            {
+                                <p>صورة المنتج الحالية</p>
+                                <MudImage Width="120" Src="@($"data:image/png;base64,{productImageBas64String}")"></MudImage>
+                            }
+                        }
+                        صورة المنتج
+                        <MudFileUpload T="IBrowserFile" FilesChanged="UploadFiles2">
+                            <ButtonTemplate>
+                                <MudButton HtmlTag="label"
+                                       Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       StartIcon="@Icons.Material.Filled.CloudUpload"
+                                       for="@context">
+                                    تحميل صورة المنتج
+                                </MudButton>
+                            </ButtonTemplate>
+                        </MudFileUpload>
+                    </MudPaper>
+                </MudItem>
+                <MudItem sm="12" md="10" lg="10">
+                    صورة المنتج
+                </MudItem>
+            </MudGrid>
+       
+        </MudItem>
+       
+    }
+</MudGrid>
+
+@code {
+    [Parameter]public int? id{ get; set; }
+    bool isEditable = false;
+    string title => (isEditable) ? "تعديل المنتج" : "اضافة منتج جديد";
+    ProductDto? productDto=new();
+    MudForm? form;
+    bool success;
+    string[] errors = { };
+    IList<IBrowserFile> files = new List<IBrowserFile>();
+    string productImageBas64String = "";
+    protected override void OnInitialized()
+    {
+        isEditable = (id ?? 0) > 0;
+        productDto = productService.FindOneProductDto(id) ?? new();
+        getProductImage(productDto.ProductImageId);
+
+    }
+    protected override void OnAfterRender(bool firstRender)
+    {
+
+    }
+    private void submitForm(EventArgs eventArgs)
+    {
+        if (!form!.IsValid)
+        {
+            snackbar.ErrorMessageCenterButton("يرجى التحقق من المدخلات");
+            return;
+        }
+        var saveResult = productService.CreateUpdateProduct(productDto!.ToProduct);
+        if (saveResult.isSave)
+        {
+            snackbar.SuccessMessageCenterButton("تم  الحفظ بنجاح");
+            isEditable = true;
+            return ;
+        }
+        snackbar.ErrorMessageCenterButton("عذرا لم يتم الحفظ");
+
+    }
+    private async void UploadFiles2(IBrowserFile file)
+    {
+
+        if (productDto==null && productDto!.Id<=0) 
+        { snackbar.ErrorMessageCenterButton("عذرا يرجى حفظ المنتج أولا");
+            return; 
+        }
+        var validateImage = imageHelper.ValidateImage(file);
+        if (validateImage.result == false)
+        {
+            snackbar.ErrorMessageCenterButton(validateImage.error!);
+            return;
+        }
+        var result = await   imageHelper.uploadImage(file);
+        if (result == null) { snackbar.ErrorMessageCenterButton("عذرا لم يتم رفع الصورة");return; }
+        var uploadResult = appStoregeService.CreateAppStorge(result!);
+        if (!uploadResult.isSave)
+        {
+            snackbar.ErrorMessageCenterButton("عذرا لم يتم رفع الصورة");
+            return;
+        }
+        if ((uploadResult.appStorge==null &&  uploadResult.appStorge!.Id<=0))
+        {
+            snackbar.ErrorMessageCenterButton("عذرا لم يتم رفع الصورة");
+        }
+        var product=  productDto.ToProduct;
+        product.ProductImageId = uploadResult.appStorge.Id;
+        product.Id = id??0;
+        product.ModifyDate = DateTime.Now;
+        var updateResult= productService.CreateUpdateProduct(product);
+        if (updateResult.isSave)
+        {
+            snackbar.SuccessMessageCenterButton("تم رفع الملف بنجاح");
+            getProductImage(product.ProductImageId);
+            // productImageBas64String = imageHelper.PathToBase64String(uploadResult.appStorge.FileName!, 120);
+          
+            return;
+        }
+        snackbar.ErrorMessageCenterButton("عذرا لم يتم الحفظ");
+    }
+
+    void getProductImage(int? id)
+    {
+        var st = appStoregeService.FindOne(id);
+        if (st != null)
+        {
+            productImageBas64String = imageHelper.PathToBase64String(st.FileName!, 120);
+
+        }
+    }
+}

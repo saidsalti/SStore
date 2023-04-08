@@ -1,0 +1,31 @@
+﻿@page "/logout"
+
+<AuthorizeView>
+    <Authorized>
+        <MudGrid>
+            <MudItem>
+                <MudCard>
+                    <MudCardHeader>
+                        <MudText Typo="Typo.h6" Color="Color.Error" >تسجيل الخروج</MudText>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <a href="Identity/Account/Manage">تسجيل خروج : , @context.User.Identity?.Name!</a>
+                        <form method="post" action="Identity/Account/Logout">
+                            <MudButton ButtonType="ButtonType.Submit" Color="Color.Primary">
+                                <MudText Color="Color.Secondary" Typo="Typo.h6">
+                                    تأكيد تسجيل الخروج
+                                </MudText>
+                            </MudButton>
+                         
+                        </form>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+       
+    </Authorized>
+</AuthorizeView>
+
+@code {
+
+}
