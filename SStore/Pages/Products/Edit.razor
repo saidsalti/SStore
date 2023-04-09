@@ -1,12 +1,15 @@
 ﻿@page "/product/edit/{id:int?}"
 @using SStore.Helpers;
 @using SStore.Model.Data.Dtos;
+@using SStore.Model.Data.Entities;
 @using SStore.Services;
 @inject IProductService productService;
 @attribute [Authorize]
 @inject IAppSnackbarService snackbar
 @inject IImageHelper imageHelper
 @inject IAppStorgeService appStoregeService
+@inject ICategoryService  categoryService
+@inject IProductCategoryService productCategoryService
 <MudGrid Class="mt-5" Justify="Justify.Center">
     <MudItem>
 
@@ -38,6 +41,8 @@
                                 <MudTextField  Format="C" @bind-Value="productDto!.ProductPrice" Required="true" Variant="Variant.Outlined" For="@(()=>productDto!.ProductPrice)" Label="سعر المنتج"></MudTextField>
                                 <MudTextField  @bind-Value="productDto!.Quantity" Required="true" Variant="Variant.Outlined" For="@(()=>productDto!.Quantity)" Label="الكمية"></MudTextField>
                                 <MudCheckBox @bind-Checked="productDto.IsActive" KeyboardEnabled="true" Label="تنشيط ؟" ></MudCheckBox>
+                            
+                           
                                 <MudItem Class="mt-2 mb-2">
                                 <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="submitForm" Disabled="@(!success)">
                                         <MudText Typo="Typo.button">حفظ</MudText>
@@ -58,6 +63,35 @@
     {
         <MudItem sm="12" md="10" lg="10">
             <MudGrid>
+                <MudItem xs="12">
+                 
+                        @if (isEditable && categoryDropDownlist!.Count > 0)
+                        {
+                        
+                         
+                        <MudSelect
+                           
+                            @bind-Value="categorySelectedValue"
+                            SelectedValuesChanged="@onValueChangedCategory"
+                            
+                            Label="الأصناف الرئيسية"
+                            
+                            T="int?" Placeholder="يرجى تحديد الأصناف الرئيسية" 
+                            MultiSelection="true"
+                            MultiSelectionTextFunc="@(new Func<List<string>, string>(GetMultiSelectionText))"
+                            SelectAll="true"
+                               SelectAllText="تحديد جميع الفئات">
+                                @foreach (var item in categoryDropDownlist!)
+                                {
+                                <MudSelectItem  T="int?" Value="@item.Id">@item.Text</MudSelectItem>
+
+                                }
+                            </MudSelect>
+                        }
+                 
+                    
+            </MudItem>
+           
                 <MudItem>
                     <MudPaper>
                         @{
@@ -96,21 +130,33 @@
     bool isEditable = false;
     string title => (isEditable) ? "تعديل المنتج" : "اضافة منتج جديد";
     ProductDto? productDto=new();
+    List<CategoryDropDown>? categoryDropDownlist;
     MudForm? form;
     bool success;
     string[] errors = { };
     IList<IBrowserFile> files = new List<IBrowserFile>();
     string productImageBas64String = "";
+    int? categorySelectedValue;
+    private IEnumerable<int?>? options;
     protected override void OnInitialized()
     {
+        LoadCategoryDropDowList();
+
         isEditable = (id ?? 0) > 0;
         productDto = productService.FindOneProductDto(id) ?? new();
         getProductImage(productDto.ProductImageId);
-
+       // options = new List<int?> { 1 };
     }
     protected override void OnAfterRender(bool firstRender)
     {
-
+        //var cat1 = new Category() { CategoryName = "كمبيوترات", IsActive = true };
+        //var cat2= new Category() { CategoryName = "اكسسوارات", IsActive = true };
+        //categoryService.Insert(cat2);
+        //categoryService.Insert(cat1);
+    }
+    private void LoadCategoryDropDowList()
+    {
+        categoryDropDownlist = categoryService.GetCategoryDropDownlist();
     }
     private void submitForm(EventArgs eventArgs)
     {
@@ -164,7 +210,7 @@
             snackbar.SuccessMessageCenterButton("تم رفع الملف بنجاح");
             getProductImage(product.ProductImageId);
             // productImageBas64String = imageHelper.PathToBase64String(uploadResult.appStorge.FileName!, 120);
-          
+
             return;
         }
         snackbar.ErrorMessageCenterButton("عذرا لم يتم الحفظ");
@@ -179,4 +225,20 @@
 
         }
     }
-}
+
+    private string GetMultiSelectionText(List<string> selectedValue)
+    {
+        return string.Join(",", selectedValue.Select(x => x));
+    }
+    private void GetProgetCategoriesSelected()
+    {
+        options = productCategoryService.GetByProductId(id).Select(s=>s.Id);
+    }
+    private void onValueChangedCategory(IEnumerable<int?> selectedValues)
+    {
+        options = selectedValues;
+
+    }
+
+    
+} 

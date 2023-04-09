@@ -21,5 +21,6 @@ namespace SStore.Data
         public DbSet<Payment> Payments { get; set; }
         public DbSet<PaymentMathod> PaymentMathods { get; set; }
         public DbSet<AppStorge> AppStorges { get; set; }
+        public DbSet<Category> Categories { get; set; }
     }
 }

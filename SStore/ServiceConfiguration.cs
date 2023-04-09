@@ -29,6 +29,8 @@ namespace SStore
             services.AddTransient<IAppSnackbarService, AppSnackbarService>();
             services.AddTransient<IAppStorgeService, AppStorgeService>();
             services.AddTransient<IImageHelper, ImageHelper>();
+            services.AddTransient<IProductCategoryService, ProductCategoryService>();
+            services.AddTransient<ICategoryService, CategoryService>();
            // services.AddScoped<IGlobalDataService, GlobalDataService>();
             services.AddAuthentication();
             

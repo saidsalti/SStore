@@ -24,6 +24,8 @@ namespace SStore.Model.Data.Dtos
         public string? ProductImagePath { get; set; }
         public DateTime? Created { get; set; }
 
+        public List<int>? CategoryIdes { get; set; }
+
         // تجاهل عند التحويل الى json
         [JsonIgnore]
         public Product ToProduct =>
