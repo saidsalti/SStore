@@ -73,7 +73,7 @@
                            
                             @bind-Value="categorySelectedValue"
                             SelectedValuesChanged="@onValueChangedCategory"
-                            
+                            SelectedValues="options"
                             Label="الأصناف الرئيسية"
                             
                             T="int?" Placeholder="يرجى تحديد الأصناف الرئيسية" 
@@ -145,7 +145,7 @@
         isEditable = (id ?? 0) > 0;
         productDto = productService.FindOneProductDto(id) ?? new();
         getProductImage(productDto.ProductImageId);
-       // options = new List<int?> { 1 };
+        GetProgetCategoriesSelected();
     }
     protected override void OnAfterRender(bool firstRender)
     {
