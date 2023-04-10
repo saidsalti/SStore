@@ -26,7 +26,12 @@ namespace SStore.Services
 
         public void DeleteAll(int? productId)
         {
-            _db.Remove(GetByProductId(productId));
+            var lst = GetByProductId(productId);
+            if( lst!.Count <= 0)
+            {
+                return;
+            }
+            _db.ProductCategories.RemoveRange(lst);
             _db.SaveChanges();
         }
 

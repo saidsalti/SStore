@@ -1,7 +1,10 @@
 ﻿@page "/catlog/products"
 @attribute [Authorize]
 @using SStore.Model.Data.Dtos;
+@using SStore.Services;
 @inject SStore.Services.IProductService productService
+@inject IDialogService DialogService
+@inject IProductService productService
 <MudGrid Justify="Justify.Center">
     <MudItem xs="10">
         <MudPaper Elevation="25">
@@ -28,18 +31,17 @@
     </MudItem>
     <MudItem xs="12" md="10">
         <MudDataGrid Items="@products"
-                     T="ProductDto"
-                  
+                     T="ProductDto"                 
                      Filterable="false"
                      Bordered="true"
                       FilterMode="DataGridFilterMode.ColumnFilterMenu"
                      SortMode="@SortMode.None"
                      Groupable="false">
             <Columns>
-                <PropertyColumn Property="x => x!.ProductName" Filterable="true" />
-                <PropertyColumn Property="x => x!.ProductPrice" Format="C" />
-                <PropertyColumn Property="x => x!.Quantity" />
-                <PropertyColumn  Property="x => x!.Created" />
+                <PropertyColumn Property="x => x!.ProductName"  Title="اسم المنتج" Filterable="true" />
+                <PropertyColumn Property="x => x!.ProductPrice" Title="سعر المنتج" Format="C" />
+                <PropertyColumn Property="x => x!.Quantity" Title="الكمية" />
+                <PropertyColumn  Property="x => x!.Created" Title="تاريخ الانشاء" />
                 <TemplateColumn Filterable="false">
                     <CellTemplate>
                         @{
@@ -50,8 +52,14 @@
                             <MudIcon Icon="@Icons.Material.Outlined.Edit"></MudIcon>
                         </MudLink>
                        
+                        
+                       <MudButton OnClick="@(e=>remove(context.Item.Id))" Color="Color.Error">
+                           <MudIcon Icon="@(Icons.Material.Outlined.RestoreFromTrash)"></MudIcon>
+                       </MudButton>
                     </CellTemplate>
+                  
                 </TemplateColumn>
+
             </Columns>
         </MudDataGrid>
     </MudItem>
@@ -62,18 +70,24 @@
     List<ProductDto>? products=null;
     protected override void OnInitialized()
     {
-    //    productService.CreateProduct(new Model.Data.Entities.Product
-    //        {
-    //            IsActive = true,
-    //            ProductName = "منتج رقم 1",
-    //            ProductPrice = 5.2m,
-    //            Quantity = 43
-    //} );
+        //    productService.CreateProduct(new Model.Data.Entities.Product
+        //        {
+        //            IsActive = true,
+        //            ProductName = "منتج رقم 1",
+        //            ProductPrice = 5.2m,
+        //            Quantity = 43
+        //} );
         loadItems();
     }
 
     private void loadItems()
     {
         products = productService.ReadAll()!.ToList()!;
+    }
+
+    private void remove(int?id)
+    {
+        productService.DeleteOne(id);
+        loadItems();
     }
 }
